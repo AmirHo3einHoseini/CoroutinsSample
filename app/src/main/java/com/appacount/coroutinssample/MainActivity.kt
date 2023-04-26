@@ -1,20 +1,21 @@
 package com.appacount.coroutinssample
 
 import android.annotation.SuppressLint
-import android.nfc.Tag
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.*
-import kotlin.math.log
-import kotlin.system.measureTimeMillis
 
 
 class MainActivity : AppCompatActivity() {
     val TAG = "MainActivity"
-    val TAG2 = "Coroutins Scop"
+    val TAG2 = "Coroutine Scope"
+    val RUNBLOCKINGTAG = "Coroutine RUN BLOCKING "
     private lateinit var txt: TextView
+    lateinit var job: Job
 
     @SuppressLint("MissingInflatedId")
     @OptIn(DelicateCoroutinesApi::class)
@@ -112,23 +113,132 @@ class MainActivity : AppCompatActivity() {
 
 
 //#9
+//        CoroutineScope(Dispatchers.Main).launch {
+//            val result1 = async { doWork1() }
+//            val result2 = async { doWork2() }
+//            Log.d(TAG2, result1.await())
+//            Log.d(TAG2, result2.await())
+//        }
+//#10 coroutineScope with async builder and time measurement
+//        CoroutineScope(Dispatchers.Main).launch {
+//            val result1 = async { scopeWork1() }
+//            val result2 = async { scopeWork2() }
+//            var finalResult = ""
+//            val time = measureTimeMillis {
+//                finalResult = "${result1.await()} ${result2.await()}"
+//            }
+//            Log.d(TAG2, "$finalResult => $time")
+//
+//        }
+//#11
+//        CoroutineScope(Dispatchers.Main).launch {
+//            runBlockingDoWork()
+//            runBlockingDoWork()
+//            runBlockingDoWork()
+//        }
+
+//        #12 change thread
+//        CoroutineScope(Dispatchers.IO).launch {
+//            doWork1()
+//            withContext(Dispatchers.Main) {
+//                txt.text = "Coroutine Changed Thread from IO to Main"
+//            }
+//        }
+
+//        #13 TimeOut in coroutine
+//        CoroutineScope(Dispatchers.IO).launch {
+//            withTimeoutOrNull(3000L) {
+//                for (i in 1000..1100) {
+//                    Log.d(TAG2, i.toString())
+//                    delay(1000)
+//                }
+//            }
+//        }
+
+//        job = CoroutineScope(Dispatchers.Main).launch {
+//            doWork1()
+//        }
+
+//        CoroutineScope(Dispatchers.Main).launch {
+//            delay(3000L)
+//            Log.d(TAG, job.isActive.toString())
+//            Log.d(TAG, job.isCompleted.toString())
+//            Log.d(TAG, job.isCancelled.toString())
+//        }
+
+//#14 coroutine with child coroutine and job with join
+//        CoroutineScope(Dispatchers.Main).launch {
+//            val job = CoroutineScope(Dispatchers.Main).launch {
+//                repeat(3) {
+//                    delay(1000L)
+//                    Log.d(TAG, "Coroutine is working ")
+//                }
+//            }
+//            job.join()
+//            Log.d(TAG, "Coroutine is Completed")
+//        }
+
+
+//        #15 coroutine with child coroutine and job with cancel
+
+
+//        CoroutineScope(Dispatchers.Main).launch {
+//            val job = CoroutineScope(Dispatchers.Main).launch {
+//                repeat(3) {
+//                    delay(1000L)
+//                    Log.d(TAG, "Coroutine is working ")
+//                }
+//            }
+//            delay(2000L)
+//            job.cancel()
+//            Log.d(TAG, "Coroutine is Completed")
+//        }
+
+
+//        #16 Coroutine with lifecycle
+
+        lifecycleScope.launch {
+            while (true) {
+                delay(1000)
+                Log.d(TAG, "Coroutine is working...")
+            }
+        }
+
         CoroutineScope(Dispatchers.Main).launch {
-            val result1 = async { doWork1() }
-            val result2 = async { doWork2() }
-            Log.d(TAG2, result1.await())
-            Log.d(TAG2, result2.await())
+            delay(3000)
+            Intent(this@MainActivity, SecondActivity::class.java).also {
+                startActivity(it)
+                finish()
+            }
         }
 
     }
 
+
+    private suspend fun runBlockingDoWork() {
+        delay(1000L)
+        Log.d(RUNBLOCKINGTAG, "runBlocking is started")
+    }
+
+
+    private suspend fun scopeWork1(): String {
+        delay(3000L)
+        return "Result 1"
+    }
+
+    private suspend fun scopeWork2(): String {
+        delay(4000L)
+        return "Result 2"
+    }
+
     suspend fun doWork1(): String {
         delay(2000L)
-        return "noobe"
+        return "Newbie"
     }
 
     suspend fun doWork2(): String {
         delay(300L)
-        return "SAG"
+        return "Pro_Newbie"
     }
 
     fun fib(n: Int): Long {
@@ -139,12 +249,12 @@ class MainActivity : AppCompatActivity() {
 
     suspend fun doNetWorkCall(): String {
         delay(3000L)
-        return "NOOBE SAG (: "
+        return "You are may sweet heart (: "
     }
 
     suspend fun doNetWorkCall2(): String {
         delay(5000L)
-        return "SAGE SAG"
+        return "Newbie (: (8"
     }
 
     suspend fun netWorkCall1(): String {
